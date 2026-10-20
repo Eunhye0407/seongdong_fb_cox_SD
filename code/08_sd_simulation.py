@@ -9,7 +9,8 @@
 모형 (연 단위, 기준일 4월 1일마다 한 걸음)
   S(t+1) = S(t) − D(t) + E(t)                         점포 수 stock, 폐업 flow D, 신규 flow E
   D(t)   = Σ_i p_i(t),  p_i(t) = 1 − exp(−exp(η_i(t)))  점포별 1년 폐업 확률(cloglog = 비례위험의 이산시간 형태)
-  η_i(t) = a + β1·ln(1+업력) + β2·ln매출 + β3·매출결측 + 임대료수준 + 업태 + β4·C200(t)/10 + β5·BIZ200(t)/10
+  η_i(t) = a + β1·ln(1+업력) + 임대료수준 + 업태 + β4·C200(t)/10 + β5·BIZ200(t)/10
+           추정매출은 넣지 않는다(2026-10-20 팀 합의, 7단계와 같음). NOSALES=0이면 이전 사양(+ ln매출 + 매출결측 더미) → 파일명에 _with_sales
            C200, BIZ200 = 그 시점 영업 중 점포로 다시 센 반경 200m 동종 수, 전체 음식점 수  →  신규·폐업이 밀도를 바꾸고, 밀도가 다음 해 폐업 확률을 바꿈(피드백)
   E(t)   = 실제로 다음 기준일에 영업 중이던 신규 점포(외생). 시나리오에서는 정보를 받은 비율 α의 신규 점포가 입지를 바꿈
 정보 시나리오 S1(α): 정보를 받은 신규 사업자는 무작위 후보지 k곳과 원래 입지의 예상 폐업 확률을 비교해 더 낮은 곳을 택함. α=0이 S0
@@ -25,6 +26,8 @@ W = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(W, 'data', 'yearly'); OUT = os.path.join(W, 'outputs', 'yearly'); os.makedirs(OUT, exist_ok=True); TAG = '20261013'
 YEARS = [2021, 2022, 2023, 2024, 2025]; RAD = 200
 NREP = int(os.environ.get('NREP', 200)); K = int(os.environ.get('KCAND', 5))
+NOSALES = os.environ.get('NOSALES', '1') == '1'          # 기본: 추정매출 통제변수 제외
+SFX = '' if NOSALES else '_with_sales'
 
 # ---------- 데이터
 tr = Transformer.from_crs('EPSG:4326', 'EPSG:5186', always_xy=True)
@@ -58,7 +61,8 @@ def counts(S, pts=None, codes=None):
     return c, biz
 
 def design(df, C, BIZ):
-    X = pd.DataFrame({'log_age': np.log1p(df.age.values), 'ls': df.ls.values, 'sm': df.sm.values, 'mid': df.mid.values, 'high': df.high.values}, index=df.index)
+    X = pd.DataFrame({'log_age': np.log1p(df.age.values), 'mid': df.mid.values, 'high': df.high.values}, index=df.index)
+    if not NOSALES: X['ls'] = df.ls.values; X['sm'] = df.sm.values
     for c in CATS: X['c_' + c] = (df.cat.values == c).astype(float)
     X['C200'] = np.asarray(C) / 10; X['BIZ200'] = np.asarray(BIZ) / 10
     return sm.add_constant(X, has_constant='add').astype(float)
@@ -126,7 +130,7 @@ if __name__ == '__main__':
     stage = sys.argv[1] if len(sys.argv) > 1 else 'all'
     actual = {Y: len(CO[Y]) for Y in YEARS}
     full = fit(YEARS); m, keep, ne, nobs = full
-    pd.DataFrame({'coef': m.params, 'hr': np.exp(m.params), 'p': m.pvalues}).to_csv(os.path.join(OUT, 'sd_params.csv'), encoding='utf-8-sig')
+    pd.DataFrame({'coef': m.params, 'hr': np.exp(m.params), 'p': m.pvalues}).to_csv(os.path.join(OUT, f'sd_params{SFX}.csv'), encoding='utf-8-sig')
     print(f'[추정] 점포-연 {nobs}건, 폐업 {ne}건 | C200 10곳당 HR {np.exp(m.params["C200"]):.3f} (p={m.pvalues["C200"]:.3f}), BIZ200 10곳당 HR {np.exp(m.params["BIZ200"]):.3f} (p={m.pvalues["BIZ200"]:.3f}), 업력(log) HR {np.exp(m.params["log_age"]):.3f}')
     if stage in ('all', 'backtest'):
         rows = []
@@ -145,10 +149,10 @@ if __name__ == '__main__':
             for y in steps: s_b = s_b * (1 - rate) + len(entrants(y)); bench.append(s_b)
             g['단순_평균폐업률'] = bench; g['단순_err_%'] = (g['단순_평균폐업률'] / g.actual - 1) * 100
             print(f'\n[{name}] 점포 수(기준일 4/1, 시뮬레이션 {NREP}회)'); print(g.round(1).to_string())
-        pd.concat(rows).to_csv(os.path.join(OUT, 'sd_backtest.csv'), index=False, encoding='utf-8-sig')
+        pd.concat(rows).to_csv(os.path.join(OUT, f'sd_backtest{SFX}.csv'), index=False, encoding='utf-8-sig')
     if stage in ('all', 'scenario'):
         rows = [monte(2021, full, a, [2022, 2023, 2024, 2025]) for a in (0.0, 0.4, 0.6)]
-        R = pd.concat(rows); R.to_csv(os.path.join(OUT, 'sd_scenarios.csv'), index=False, encoding='utf-8-sig')
+        R = pd.concat(rows); R.to_csv(os.path.join(OUT, f'sd_scenarios{SFX}.csv'), index=False, encoding='utf-8-sig')
         tot = R.groupby(['alpha', 'rep']).agg(clos=('closures', 'sum'), clos_ent=('closures_ent', 'sum'), stock=('stock_after', 'last'), entp=('ent_p', 'mean'), entb=('ent_biz', 'mean')).reset_index()
         base = tot[tot.alpha == 0].set_index('rep')
         print(f'\n[시나리오] 2021→2025 누적 (평균 [5%, 95%], {NREP}회)')
