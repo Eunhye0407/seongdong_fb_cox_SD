@@ -9,17 +9,18 @@
       data/raw/서울시_상권분석서비스(점포-상권)_{연도}년.csv.zip     2021~2025 (저장소에 있음)
       data/raw/서울시_상권분석서비스(추정매출-상권)_{연도}년.csv.zip  2021~2025 (※ 2022~2025는 용량 때문에 저장소에 없음 → README 참고)
       data/raw/서울특별시_성동구 상가임대료 정보_20211201.csv
-      data/interim/yearly_snapshot_20260912/restaurants_with_reviews_raw.csv
-                 2021 코호트 3,775곳의 좌표·상권·업종코드·임대료·매출. 2026-09-12 기준 2단계 결과의 사본(이 값으로 코호트를 만들었음)
+      data/interim/restaurants_with_reviews_raw.csv
+                 2021 코호트 3,775곳의 좌표·상권·업종코드·임대료·매출 = 2단계 결과(10/13 인허가, 1~4단계 본 분석과 같은 값)
+                 (환경변수 BASE2021=snapshot이면 이전 방식대로 9/12 사본 data/interim/yearly_snapshot_20260912/ 를 씀)
       data/interim/yearly_snapshot_20260912/geocode_vworld_{full,pilot}.csv
                  2021 코호트 밖 새 점포 중 좌표가 없는 곳의 VWorld 지오코딩 결과(인허가 좌표계 EPSG:5174)
 출력  data/yearly/cohort_{연도}_end{종료일}.csv   점포 1행. 3단계 최종 데이터와 같은 열 이름(리뷰 열 제외)
 
-실행  python code/06_yearly_cohorts.py                    종료일 2026-10-13 (환경변수 END로 변경)
-      END=2026-09-12 python code/06_yearly_cohorts.py     2021 코호트가 9/12 기준 3단계 결과와 일치하는지 검증
+실행  python code/06_yearly_cohorts.py                    종료일 2026-10-13 (환경변수 END로 변경). 2021 코호트가 3단계 최종 데이터와 같은지 검증
+      BASE2021=snapshot END=2026-09-12 python code/06_yearly_cohorts.py   (이전 방식) 9/12 사본 기준 3단계 결과와 일치하는지 검증
 
-방침  - 2021 코호트는 3단계 표본(3,775곳)과 같고 폐업 갱신만 반영한다. 이 점포들의 좌표·상권·업종코드·임대료·매출은 위 사본 값을 쓰고,
-        2022~2025년에 새로 들어온 점포만 같은 방법으로 계산한다.
+방침  - 2021 코호트는 3단계 표본(3,775곳)과 같다. 이 점포들의 좌표·상권·업종코드·임대료·매출은 2단계 결과 값을 쓰고,
+        2022~2025년에 새로 들어온 점포만 같은 방법으로 계산한다. (2026-10-27: 9/12 사본 → 10/13 2단계 결과로 바꿔 좌표 10곳 차이를 없앰)
       - 좌표: 인허가 X,Y를 EPSG:5174로 보고 WGS84로 변환(1단계와 같은 방식)
       - 임대료는 2021년 1분기 동별 값으로 고정(2021-11 이후 자료 없음), 상권 점포당 매출은 기준 연도 1분기 값
       - 업태→업종코드 매핑은 사본 값에서 복원(매핑이 없는 업태는 미분류)
@@ -31,6 +32,8 @@ from pyproj import Transformer
 sys.stdout.reconfigure(encoding='utf-8')
 W = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(W, 'data', 'raw'); SNAP = os.path.join(W, 'data', 'interim', 'yearly_snapshot_20260912')
+BASE2021 = os.environ.get('BASE2021', 'current')   # current: 10/13 2단계 결과(기본) | snapshot: 9/12 사본(이전 방식)
+BASE_DIR = SNAP if BASE2021 == 'snapshot' else os.path.join(W, 'data', 'interim')
 OUT = os.path.join(W, 'data', 'yearly'); os.makedirs(OUT, exist_ok=True)
 import importlib.util, unicodedata
 _spec = importlib.util.spec_from_file_location('bf', os.path.join(W, 'code', '03_build_features.py'))
@@ -61,12 +64,12 @@ L = pd.read_csv(raw_file('성동구_일반음식점_인허가_갱신_20261019.cs
 L['restaurant_id'] = L['관리번호'].astype(str)
 L['open'] = pd.to_datetime(L['인허가일자'], errors='coerce'); L['close'] = pd.to_datetime(L['폐업일자'], errors='coerce')
 assert L.restaurant_id.is_unique
-R = pd.read_csv(os.path.join(SNAP, 'restaurants_with_reviews_raw.csv'), encoding='utf-8-sig')
+R = pd.read_csv(os.path.join(BASE_DIR, 'restaurants_with_reviews_raw.csv'), encoding='utf-8-sig')
 R['restaurant_id'] = R['restaurant_id'].astype(str)
-print(f'[1] 인허가 갱신본 {len(L)}행 (개업 최대 {L.open.max().date()}, 폐업 최대 {L.close.max().date()}) | 종료일 {END.date()} | 2021 코호트 {len(R)}곳')
+print(f'[1] 인허가 갱신본 {len(L)}행 (개업 최대 {L.open.max().date()}, 폐업 최대 {L.close.max().date()}) | 종료일 {END.date()} | 2021 코호트 {len(R)}곳 (기준 {BASE2021})')
 
 # 업태 → 서비스 업종 코드 매핑(저장소 값에서 복원, 업태마다 코드가 하나로 정해지는지 확인)
-tmp = R.merge(L[['restaurant_id', '업태구분명']], on='restaurant_id', how='left')
+tmp = R.drop(columns=['업태구분명'], errors='ignore').merge(L[['restaurant_id', '업태구분명']], on='restaurant_id', how='left')   # 업태는 갱신본 값 사용
 mp = tmp.dropna(subset=['서울시_서비스_업종_코드']).groupby('업태구분명').agg(code=('서울시_서비스_업종_코드', 'first'), name=('서울시_서비스_업종_코드_명', 'first'), k=('서울시_서비스_업종_코드', 'nunique'))
 assert (mp.k == 1).all(), '업태-코드 매핑이 유일하지 않음'
 print(f'[1] 업태→업종코드 매핑 {len(mp)}개 업태 복원 (매핑 없는 업태는 3단계와 같이 미분류)')
@@ -184,11 +187,13 @@ for Y in YEARS:
     d = cohort(Y)
     d.to_csv(os.path.join(OUT, f'cohort_{Y}_end{TAG}.csv'), index=False, encoding='utf-8-sig')
     print(f'    n={len(d)}, 폐업 {int(d.event.sum())} ({d.event.mean():.1%}), 중도절단 {int((1 - d.event).sum())}, 평균 업력 {d.business_age_years.mean():.1f}년, 평균 이웃(300m) {d.adjacent_biz_300m.mean():.0f}')
-    if Y == 2021 and END == pd.Timestamp('2026-09-12'):
-        F = pd.read_csv(os.path.join(SNAP, 'final_dataset_with_reviews.csv'), encoding='utf-8-sig'); F['restaurant_id'] = F['restaurant_id'].astype(str)
+    chk_file = os.path.join(SNAP, 'final_dataset_with_reviews.csv') if (BASE2021 == 'snapshot' and END == pd.Timestamp('2026-09-12')) else \
+               os.path.join(W, 'data', 'final_dataset_with_reviews.csv') if (BASE2021 != 'snapshot' and END == pd.Timestamp('2026-10-13')) else None
+    if Y == 2021 and chk_file:
+        F = pd.read_csv(chk_file, encoding='utf-8-sig'); F['restaurant_id'] = F['restaurant_id'].astype(str)
         mm = d.merge(F, on='restaurant_id', suffixes=('', '_eh'))
-        print(f'    [검증] 9/12 기준 3단계 결과와 점포 {len(mm)}/{len(F)} 일치(교집합), 내 코호트 {len(d)}곳')
-        for c in ['event', 'duration_days', 'competitor_c_100m', 'adjacent_biz_300m', 'competitor_c_300m', 'adjacent_biz_500m', 'net_strength_200m', 'rent_level', 'area_sales_per_store', 'category_code']:
+        print(f'    [검증] {os.path.relpath(chk_file, W)}와 점포 {len(mm)}/{len(F)} 일치(교집합), 내 코호트 {len(d)}곳')
+        for c in ['event', 'duration_days', 'longitude', 'latitude', 'trdar_code', 'competitor_c_100m', 'competitor_c_200m', 'adjacent_biz_200m', 'adjacent_biz_300m', 'competitor_c_300m', 'adjacent_biz_500m', 'net_strength_200m', 'net_betweenness_200m', 'net_clustering_200m', 'rent_level', 'area_sales_per_store', 'category_code']:
             a, b2 = mm[c], mm[c + '_eh']
             eq = ((a == b2) | (a.isna() & b2.isna())) if a.dtype == object or str(a.dtype).startswith('string') else (np.isclose(a.astype(float), b2.astype(float), rtol=1e-4, equal_nan=True))
             print(f'      {c}: 일치 {eq.mean():.2%}')

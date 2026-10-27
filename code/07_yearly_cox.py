@@ -1,5 +1,5 @@
 """
-7단계: 연도별 코호트 Cox — 기준일 2021~2025년 코호트마다 같은 Cox 모형을 추정 (보고서 표 1)
+7단계: 연도별 코호트 Cox — 기준일 2021~2025년 코호트마다 같은 Cox 모형을 추정 (논문 표 3)
 
 입력  data/yearly/cohort_{연도}_end20261013.csv   (6단계 결과)
 출력  outputs/yearly/yearly_cox_summary.csv       코호트 × 반경 × 모형별 HR, 95% CI, p, C-index, 네트워크 우도비 검정

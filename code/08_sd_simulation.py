@@ -1,4 +1,4 @@
-"""8단계: SD(점포 stock-flow) 시뮬레이션: 연도별 코호트 + 시간가변 폐업 위험(이산시간 Cox형) + 정보 활용률 시나리오
+"""8단계(논문 표 4, 그림 2·3의 수치): SD(점포 stock-flow) 시뮬레이션: 연도별 코호트 + 시간가변 폐업 위험(이산시간 Cox형) + 정보 활용률 시나리오
 입력  data/yearly/cohort_{2021..2025}_end20261013.csv  (6단계 결과)
 출력  outputs/yearly/sd_params.csv     폐업 확률 계수(점포-연 패널 cloglog)
       outputs/yearly/sd_backtest.csv   검증 시뮬레이션(회차 × 연도)
