@@ -107,7 +107,8 @@ print("DATA_DIR:", DATA_DIR)
 # ## 1. 일반음식점 인허가정보 → 기준 데이터
 
 # %%
-restaurant_path = find_file("성동구", "일반음식점", "인허가", suffix=".csv")
+# '인허가 정보'로 찾아야 6단계용 갱신본(성동구_일반음식점_인허가_갱신_20261019.csv)과 겹치지 않는다
+restaurant_path = find_file("성동구", "일반음식점", "인허가 정보", suffix=".csv")
 mapping_path = find_file("성동구_음식점_업태_서울상권서비스업종_매핑", suffix=".csv")
 
 restaurant = read_raw_csv(
