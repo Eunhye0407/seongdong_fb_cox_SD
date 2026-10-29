@@ -1,0 +1,26 @@
+  model    var     hr      p
+   full BIZ200 0.9685 0.0000
+   full   C200 1.0261 0.0723
+full_fe BIZ200 0.9646 0.0000
+full_fe   C200 1.0309 0.0399
+    train      test    model   auc
+2021-2022 2023-2025 combined 0.565
+2021-2022 2023-2025 age_only 0.599
+2021-2023 2024-2025 combined 0.600
+2021-2023 2024-2025 age_only 0.593
+2021-2024 2025-2025 combined 0.616
+2021-2024 2025-2025 age_only 0.610
+                                       test  combined    simple naive
+                  Stores 2022~25, error (%) -1.3~+1.9 -5.5~-1.7     —
+                Dong stores 2025, error (%)       8.7      10.2  12.6
+                       Dong closure rate, r      0.57     -0.27  0.81
+                    with dong fixed effects      0.97         —     —
+                     Store AUC, out-of-time 0.56~0.62 0.59~0.61  0.50
+          Stores 2026 (hold-out), error (%)      +4.2      +3.1  +1.6
+                     with actual 2026 entry      +0.7      +0.5  +1.6
+(exogenous entry) Stores 2022~25, error (%) -1.6~+0.5 -1.4~+0.7     —
+[2026] 실제 점포 3947 폐업 473 진입 411
+       stock      lo      hi   clos    ent
+case                                      
+C_M1  3973.5  3930.8  4004.0  446.5  411.0
+H_M2  4112.7  3984.7  4228.2  446.5  550.3
