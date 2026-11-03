@@ -1,15 +1,15 @@
 """
-7단계: 연도별 코호트 Cox — 기준일 2021~2025년 코호트마다 같은 Cox 모형을 추정 (논문 표 3)
+7단계: 연도별 코호트 Cox — 기준일 2021~2025년 코호트마다 같은 Cox 모형을 추정 (논문 3.2절 본문의 기준일별 결과)
 
 입력  data/yearly/cohort_{연도}_end20261013.csv   (6단계 결과)
 출력  outputs/yearly/yearly_cox_summary.csv       코호트 × 반경 × 모형별 HR, 95% CI, p, C-index, 네트워크 우도비 검정
 모형  A: C·BIZ(10곳 단위), B: R·BIZ, C: A + 네트워크 지표(우도비 검정)
       통제: 업력, 임대료 수준, 업태 / 상권 군집 강건 SE. 전체 점포 사용
-      추정매출(log 매출)은 통제 변수에서 뺀다(2026-10-20 팀 합의: 매출은 유의하지 않고, 808곳이 결측이라 대입·더미·표본 제외 없이
-      모든 점포를 쓰기 위함). 4단계 강건성 검토의 '매출 변수 제외(전체 3,775곳)' 설정과 같은 사양이다.
-      모형 코드는 code/yearly_cox_spec.py(4단계 Cox의 2026-10-15 버전)의 함수를 쓰고 통제 변수만 바꾼다.
+      추정매출(log 매출)은 통제 변수에서 뺀다. 매출은 4단계에서 유의하지 않았고(HR 1.029, p = .50) 808곳이 결측이므로,
+      대입·더미·표본 제외 없이 모든 점포를 쓰기 위함이다. 4단계 강건성 검토의 '매출 변수 제외(전체 3,775곳)' 설정과 같다.
+      모형 함수는 code/yearly_cox_spec.py를 쓰고 통제 변수만 바꾼다.
 실행  python code/07_yearly_cox.py              (약 2분)
-      NOSALES=0 python code/07_yearly_cox.py     이전 사양(log 매출 + 결측 더미) → yearly_cox_summary_with_sales.csv
+      NOSALES=0 python code/07_yearly_cox.py     민감도: log 매출 + 결측 더미 포함 → yearly_cox_summary_with_sales.csv
 """
 import os, sys, warnings
 import numpy as np, pandas as pd

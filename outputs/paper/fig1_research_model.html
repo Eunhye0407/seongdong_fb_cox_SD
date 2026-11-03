@@ -1,0 +1,101 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;background:#fff;}
+  body{width:860px;height:560px;position:relative;font-family:"Noto Sans CJK KR","Noto Sans",sans-serif;color:#111;}
+  .box{position:absolute;border:3px solid #1a1a1a;border-radius:12px;box-sizing:border-box;text-align:center;}
+  .gray{background:#f1f1f1;} .blue{background:#e6ebf4;} .white{background:#fff;}
+  .t{font-weight:700;font-size:16px;line-height:1.2;margin-top:12px;}
+  .s{font-size:13.5px;line-height:1.45;margin-top:7px;}
+  .lbl{position:absolute;font-size:14px;text-align:center;}
+  svg{position:absolute;left:0;top:0;}
+  .n{font-size:15px;font-weight:700;}
+</style></head>
+<body>
+<div class="box gray" style="left:8px;top:20px;width:212px;height:128px;">
+  <div class="t">Controls <i>Z</i></div>
+  <div class="s">Firm age · rent level<br>Sales (log, main) · category</div>
+</div>
+<div class="box blue" style="left:8px;top:206px;width:212px;height:128px;">
+  <div class="t">Radius competition <i>K</i>(<i>r</i>)</div>
+  <div class="s"><i>C</i> · <i>BIZ</i> · share <i>R</i><br>(<i>r</i> = 100–500 m)</div>
+</div>
+<div class="box blue" style="left:8px;top:392px;width:212px;height:128px;">
+  <div class="t">Competition network</div>
+  <div class="s">Weighted strength<br>Betweenness · clustering</div>
+</div>
+<div class="box white" style="left:256px;top:196px;width:140px;height:148px;">
+  <div class="t" style="margin-top:14px;">Closure risk</div>
+  <div class="s" style="margin-top:8px;">Cox PH model<br>Baselines<br>2021–2025</div>
+</div>
+<div class="box white" style="left:430px;top:8px;width:424px;height:544px;"></div>
+<div class="lbl" style="left:430px;top:16px;width:424px;font-weight:700;font-size:16.5px;">System Dynamics (store-level stock–flow)</div>
+<div class="lbl" style="left:228px;top:150px;width:40px;">Ctrl</div>
+<div class="lbl" style="left:222px;top:242px;width:36px;font-size:13px;">H1–3</div>
+<div class="lbl" style="left:228px;top:392px;width:30px;">H4</div>
+<div class="lbl" style="left:396px;top:240px;width:36px;font-size:13px;">β</div>
+<svg width="860" height="560" viewBox="0 0 860 560" font-family="Noto Sans CJK KR, Noto Sans, sans-serif">
+  <defs>
+    <marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+  </defs>
+  <!-- inputs to Cox -->
+  <line x1="200" y1="148" x2="262" y2="200" stroke="#1a1a1a" stroke-width="3" marker-end="url(#ah)"/>
+  <line x1="222" y1="270" x2="252" y2="270" stroke="#1a1a1a" stroke-width="3" marker-end="url(#ah)"/>
+  <line x1="200" y1="392" x2="262" y2="340" stroke="#1a1a1a" stroke-width="3" marker-end="url(#ah)"/>
+  <line x1="398" y1="270" x2="428" y2="270" stroke="#1a1a1a" stroke-width="3" marker-end="url(#ah)"/>
+
+  <!-- nodes -->
+  <g class="n" font-size="15" font-weight="700" text-anchor="middle">
+    <rect x="478" y="70" width="130" height="38" rx="19" fill="#e6ebf4" stroke="#1a1a1a" stroke-width="2"/>
+    <text x="543" y="95">Stores S(t)</text>
+    <rect x="690" y="70" width="140" height="38" rx="19" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+    <text x="760" y="95">Closures D(t)</text>
+    <rect x="478" y="252" width="130" height="38" rx="19" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+    <text x="543" y="277">Density BIZ₂₀₀</text>
+    <rect x="690" y="252" width="140" height="38" rx="19" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+    <text x="760" y="277">Closure prob. pᵢ</text>
+    <rect x="478" y="436" width="130" height="38" rx="19" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+    <text x="543" y="461">Entries E(t)</text>
+    <rect x="690" y="436" width="140" height="38" rx="19" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+    <text x="760" y="461">Vacancies</text>
+  </g>
+
+  <g stroke="#1a1a1a" stroke-width="2.6" fill="none" marker-end="url(#ah)">
+    <!-- B1: S -> D (+), D -> S (-) -->
+    <path d="M 608 82 L 686 82"/>
+    <path d="M 700 108 C 680 140, 620 140, 590 112"/>
+    <!-- R1: D -> BIZ (-), BIZ -> p (-), p -> D (+) -->
+    <path d="M 712 110 L 586 248"/>
+    <path d="M 610 271 L 686 271"/>
+    <path d="M 790 250 L 790 112"/>
+    <!-- B2: D -> Vacancies (+) along right edge, V -> E (+), E -> BIZ (+) -->
+    <path d="M 830 96 C 852 200, 852 360, 826 434"/>
+    <path d="M 688 455 L 612 455"/>
+    <path d="M 520 434 L 520 294"/>
+    <!-- E -> S (+) along left edge -->
+    <path d="M 480 448 C 446 360, 446 180, 478 106"/>
+  </g>
+  <g font-size="16" font-weight="700" fill="#1a1a1a">
+    <text x="664" y="76">+</text>
+    <text x="600" y="146">−</text>
+    <text x="584" y="224">−</text>
+    <text x="670" y="264">−</text>
+    <text x="798" y="132">+</text>
+    <text x="824" y="404">+</text>
+    <text x="620" y="449">+</text>
+    <text x="526" y="310">+</text>
+    <text x="456" y="124">+</text>
+  </g>
+  <!-- loop markers -->
+  <g font-size="16" font-weight="700" text-anchor="middle" fill="#444">
+    <circle cx="645" cy="110" r="15" fill="#fff" stroke="#666" stroke-width="2"/><text x="645" y="116">B1</text>
+    <circle cx="730" cy="205" r="17" fill="#fff" stroke="#666" stroke-width="2"/><text x="730" y="211">R1</text>
+    <circle cx="672" cy="372" r="17" fill="#fff" stroke="#666" stroke-width="2"/><text x="672" y="378">B2</text>
+  </g>
+  <g font-size="13" fill="#555">
+    <text x="452" y="508">α: informed entrants pick the lowest-risk vacancy</text>
+    <text x="452" y="530">ρ, λ: automated entrants → effective BIZ* (Eq. 6)</text>
+    
+  </g>
+</svg>
+</body></html>

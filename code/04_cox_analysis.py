@@ -1,5 +1,6 @@
 """
 4단계 생존분석: Kaplan-Meier → 반경 경쟁 Cox 모형(H1–H3) → 경쟁 네트워크 Cox 모형(H4) → 강건성 검토
+논문 표 1(cox_radius_models.csv), 표 2(cox_network_models.csv), 3.1절 본문 수치(KM, 시간가변 계수, 강건성)
 
 입력  data/final_dataset_with_reviews.csv      (code/03_build_features.py 결과)
 출력  outputs/tables/*.csv, outputs/figures/*.png, outputs/results_summary.md

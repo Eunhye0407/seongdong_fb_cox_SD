@@ -1,4 +1,4 @@
-"""팀원들이 나눠 돌린 part 파일을 하나로 합치기 (data/interim 에서):  python3 ../../code/review_collection/combine_parts.py"""
+"""여러 명이 나눠 수집한 part 파일을 종류별로 하나로 합치기 (data/interim 에서):  python3 ../../code/review_collection/combine_parts.py"""
 import glob
 import pandas as pd
 

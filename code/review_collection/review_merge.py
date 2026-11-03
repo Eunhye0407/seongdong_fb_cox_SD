@@ -11,7 +11,6 @@
 
 사용법 (data/interim 에서, combine_parts.py 로 part 파일들을 종류별로 하나로 합친 뒤):
     python3 ../../code/review_collection/review_merge.py cohort_reviews_all.csv cohort_restaurants_all.csv final_restaurant_level_dataset.csv
-    (예전 동 키워드 방식 파일도 그대로 넣으면 자동으로 주소+상호명 매칭)
 """
 import re
 import sys
