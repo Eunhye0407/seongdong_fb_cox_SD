@@ -3,7 +3,7 @@
 
 입력  data/interim/final_restaurant_level_dataset.csv   (code/01_preprocess.py 결과)
       data/interim/review_features.csv                  (리뷰 요약 변수, 리뷰가 매칭된 1,395개 점포)
-출력  data/interim/restaurants_with_reviews_raw.csv     (code/build_features.py 입력)
+출력  data/interim/restaurants_with_reviews_raw.csv     (code/03_build_features.py 입력)
 
 실행  python code/02_attach_reviews.py   → 다음 단계: code/03_build_features.py
 

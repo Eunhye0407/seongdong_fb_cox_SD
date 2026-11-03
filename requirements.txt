@@ -1,4 +1,4 @@
-# 분석 파이프라인 1~11단계 (Python 3.9 이상)
+# 분석 파이프라인 1~14단계 (Python 3.9 이상)
 pandas>=2.0
 numpy>=1.24
 scipy>=1.10
@@ -8,6 +8,7 @@ pyproj>=3.5
 requests>=2.31
 python-igraph>=0.10
 matplotlib>=3.7
+scikit-learn>=1.3        # 13단계 AUC
 
 # 네이버 리뷰 수집 (code/review_collection, 재실행할 때만 필요)
 # playwright>=1.40
